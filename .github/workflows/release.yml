@@ -42,7 +42,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: release/*.exe
+          path: |
+            release/*.exe
+            release/*.yml
 
   # ── macOS ─────────────────────────────────────────────────────────────────────
   build-macos:
@@ -75,7 +77,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-installer
-          path: release/*.dmg
+          path: |
+            release/*.dmg
+            release/*.yml
 
   # ── Linux ─────────────────────────────────────────────────────────────────────
   build-linux:
@@ -108,7 +112,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-installer
-          path: release/*.AppImage
+          path: |
+            release/*.AppImage
+            release/*.yml
 
   # ── GitHub Release erstellen ──────────────────────────────────────────────────
   create-release:
