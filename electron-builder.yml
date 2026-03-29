@@ -1,0 +1,65 @@
+appId: com.mebtc.dashboard
+productName: MeBTC Dashboard
+copyright: Copyright © 2024 MeBTC
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist-electron/**/*
+  - package.json
+
+# ── macOS ──────────────────────────────────────────────────────────────────────
+mac:
+  category: public.app-category.finance
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  icon: build/icon.icns
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+
+dmg:
+  title: ${productName} ${version}
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+# ── Windows ────────────────────────────────────────────────────────────────────
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.ico
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  deleteAppDataOnUninstall: false
+
+# ── Linux ──────────────────────────────────────────────────────────────────────
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+  icon: build/icons
+  category: Finance
+  synopsis: MeBTC Dashboard – Avalanche DeFi
+
+# ── Auto-Updater via GitHub Releases ──────────────────────────────────────────
+# Aktivieren sobald das Repo auf GitHub gepusht ist:
+# publish:
+#   provider: github
+#   owner: <github-username>
+#   repo: Dashboard-MeBTC
+#   releaseType: release

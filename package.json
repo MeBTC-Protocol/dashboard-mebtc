@@ -1,24 +1,34 @@
 {
-  "name": "frontend-vue",
+  "name": "mebtc-dashboard",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "main": "dist-electron/main/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:dev": "electron-vite dev",
+    "electron:build": "electron-vite build --mode electron",
+    "electron:pack": "npm run electron:build && electron-builder --dir",
+    "dist": "npm run electron:build && electron-builder"
   },
   "dependencies": {
     "@reown/appkit": "^1.8.15",
     "@reown/appkit-adapter-ethers": "^1.8.15",
+    "electron-updater": "^6.8.3",
     "ethers": "^6.16.0",
     "vue": "^3.5.24"
   },
   "devDependencies": {
+    "@swc/core": "^1.15.21",
     "@types/node": "^24.10.1",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.8.1",
     "autoprefixer": "^10.4.20",
+    "electron": "^41.1.0",
+    "electron-builder": "^26.8.1",
+    "electron-vite": "^5.0.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "typescript": "~5.9.3",
