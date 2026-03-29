@@ -1,5 +1,6 @@
 import { defineConfig } from 'electron-vite'
 import vue from '@vitejs/plugin-vue'
+import pkg from './package.json'
 
 export default defineConfig({
   // ── Main process ──────────────────────────────────────────────
@@ -29,6 +30,9 @@ export default defineConfig({
   // ── Renderer (Vue app) ────────────────────────────────────────
   renderer: {
     root: '.',
+    define: {
+      'import.meta.env.VITE_APP_VERSION': JSON.stringify(pkg.version)
+    },
     plugins: [
       vue({
         template: {

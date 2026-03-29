@@ -48,6 +48,15 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
+  // F5 / Ctrl+R zum Neu laden (in Electron bei file:// nicht standardmäßig verfügbar)
+  win.webContents.on('before-input-event', (_event, input) => {
+    if (input.type === 'keyDown') {
+      if (input.key === 'F5' || (input.control && input.key === 'r')) {
+        win.webContents.reload()
+      }
+    }
+  })
+
   // WalletConnect-Relay lehnt Origin: null (file://) ab — auf registrierte Domain setzen
   win.webContents.session.webRequest.onBeforeSendHeaders(
     {

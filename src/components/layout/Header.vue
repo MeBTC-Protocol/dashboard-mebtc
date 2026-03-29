@@ -11,6 +11,7 @@ defineProps<{ title: string; meta?: HeaderMeta[]; iconUrl?: string }>()
 
 const { open } = useAppKit()
 const { isConnected, address, chainId, onChain } = useWallet()
+const appVersion = (import.meta.env.VITE_APP_VERSION as string | undefined) ?? 'dev'
 const buttonLabel = computed(() =>
   isConnected.value && address.value ? shortAddr(address.value) : 'Wallet verbinden'
 )
@@ -66,6 +67,7 @@ const buttonLabel = computed(() =>
               <div>address: {{ shortAddr(address) }}</div>
               <div v-if="isConnected">chain: {{ chainId }}</div>
               <div v-if="isConnected">on target: {{ String(onChain) }}</div>
+              <div class="ui-meta-version">v{{ appVersion }}</div>
             </div>
           </div>
         </div>
@@ -225,5 +227,14 @@ const buttonLabel = computed(() =>
 
 .meta-info-line + .meta-info-line {
   margin-top: 8px;
+}
+
+.ui-meta-version {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: var(--ui-border-width) solid var(--ui-border);
+  color: var(--ui-text-muted);
+  font-size: 10px;
+  text-align: right;
 }
 </style>
