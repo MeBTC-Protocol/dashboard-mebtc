@@ -47,6 +47,23 @@ function createWindow(): void {
     shell.openExternal(url)
     return { action: 'deny' }
   })
+
+  // WalletConnect-Relay lehnt Origin: null (file://) ab — auf registrierte Domain setzen
+  win.webContents.session.webRequest.onBeforeSendHeaders(
+    {
+      urls: [
+        'wss://*.walletconnect.org/*',
+        'https://*.walletconnect.org/*',
+        'wss://*.walletconnect.com/*',
+        'https://*.walletconnect.com/*',
+        'https://*.reown.com/*'
+      ]
+    },
+    (details, callback) => {
+      details.requestHeaders['Origin'] = 'https://mebtc.network'
+      callback({ requestHeaders: details.requestHeaders })
+    }
+  )
 }
 
 function setupAutoUpdater(): void {
