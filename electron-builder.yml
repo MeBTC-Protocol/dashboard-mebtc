@@ -57,9 +57,8 @@ linux:
   synopsis: MeBTC Dashboard – Avalanche DeFi
 
 # ── Auto-Updater via GitHub Releases ──────────────────────────────────────────
-# Aktivieren sobald das Repo auf GitHub gepusht ist:
-# publish:
-#   provider: github
-#   owner: <github-username>
-#   repo: Dashboard-MeBTC
-#   releaseType: release
+publish:
+  provider: github
+  owner: MeBTC-Protocol
+  repo: dashboard-mebtc
+  releaseType: release

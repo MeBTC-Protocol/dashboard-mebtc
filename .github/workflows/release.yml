@@ -1,0 +1,135 @@
+name: Build & Release
+
+# Wird ausgelöst wenn du einen Tag wie "v1.0.0" pushst
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  # ── Windows ──────────────────────────────────────────────────────────────────
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: .env.electron erstellen
+        run: |
+          echo "VITE_REOWN_PROJECT_ID=${{ secrets.VITE_REOWN_PROJECT_ID }}" > .env.electron
+          echo "VITE_APP_URL=${{ secrets.VITE_APP_URL }}" >> .env.electron
+          echo "VITE_FUJI_RPC_URL=https://api.avax-test.network/ext/bc/C/rpc" >> .env.electron
+          echo "VITE_AVALANCHE_RPC_URL=https://api.avax.network/ext/bc/C/rpc" >> .env.electron
+          echo "VITE_TARGET_CHAIN_ID=43113" >> .env.electron
+        shell: bash
+
+      - name: Windows Installer bauen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist
+
+      - name: Installer hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: release/*.exe
+
+  # ── macOS ─────────────────────────────────────────────────────────────────────
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: .env.electron erstellen
+        run: |
+          echo "VITE_REOWN_PROJECT_ID=${{ secrets.VITE_REOWN_PROJECT_ID }}" > .env.electron
+          echo "VITE_APP_URL=${{ secrets.VITE_APP_URL }}" >> .env.electron
+          echo "VITE_FUJI_RPC_URL=https://api.avax-test.network/ext/bc/C/rpc" >> .env.electron
+          echo "VITE_AVALANCHE_RPC_URL=https://api.avax.network/ext/bc/C/rpc" >> .env.electron
+          echo "VITE_TARGET_CHAIN_ID=43113" >> .env.electron
+
+      - name: macOS DMG bauen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist
+
+      - name: DMG hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-installer
+          path: release/*.dmg
+
+  # ── Linux ─────────────────────────────────────────────────────────────────────
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: .env.electron erstellen
+        run: |
+          echo "VITE_REOWN_PROJECT_ID=${{ secrets.VITE_REOWN_PROJECT_ID }}" > .env.electron
+          echo "VITE_APP_URL=${{ secrets.VITE_APP_URL }}" >> .env.electron
+          echo "VITE_FUJI_RPC_URL=https://api.avax-test.network/ext/bc/C/rpc" >> .env.electron
+          echo "VITE_AVALANCHE_RPC_URL=https://api.avax.network/ext/bc/C/rpc" >> .env.electron
+          echo "VITE_TARGET_CHAIN_ID=43113" >> .env.electron
+
+      - name: Linux AppImage bauen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist
+
+      - name: AppImage hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-installer
+          path: release/*.AppImage
+
+  # ── GitHub Release erstellen ──────────────────────────────────────────────────
+  create-release:
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Installer herunterladen
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: release/
+
+      - name: Release auf GitHub erstellen
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
