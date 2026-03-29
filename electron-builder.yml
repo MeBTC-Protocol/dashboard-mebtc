@@ -57,6 +57,7 @@ linux:
   icon: build/icons
   category: Finance
   synopsis: MeBTC Dashboard – Avalanche DeFi
+  artifactName: MeBTC-Dashboard-${version}.${ext}
 
 # ── Auto-Updater via GitHub Releases ──────────────────────────────────────────
 publish:
