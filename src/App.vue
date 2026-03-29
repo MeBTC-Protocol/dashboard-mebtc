@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { formatUnits, parseUnits } from 'ethers'
 import Header from './components/layout/Header.vue'
 import ThemeToggle from './components/common/ThemeToggle.vue'
@@ -44,6 +44,10 @@ import { useMebtcPrice } from './composables/useMebtcPrice'
 import { useSwap } from './composables/useSwap'
 import { useOracleActions } from './composables/useOracleActions'
 import { useUiRpcMonitoring } from './composables/useUiRpcMonitoring'
+import { useLocale } from './composables/useLocale'
+
+// locale
+const { t } = useLocale()
 
 // wallet
 const { isConnected, onChain } = useWallet()
@@ -256,6 +260,13 @@ type ApprovalPromptState = {
 const approvalPrompt = ref<ApprovalPromptState | null>(null)
 const approvalPromptBusy = ref(false)
 const approvalPromptError = ref('')
+
+const updateReady = ref(false)
+onMounted(() => {
+  window.electronAPI?.onUpdateDownloaded(() => {
+    updateReady.value = true
+  })
+})
 
 useUiRpcMonitoring([
   { context: 'mining-stats', error: miningStatsError },
@@ -669,26 +680,27 @@ async function swapWithApproval(params: { direction: 'buy' | 'sell'; amountIn: s
 const headerMeta = computed(() => {
   const twapText = twapPriceText.value === '-' ? '-' : `${twapPriceText.value} USDC`
   const poolText = poolPriceText.value === '-' ? '-' : `${poolPriceText.value} USDC`
-  const feeFreshText = feePriceFresh.value ? 'ja' : 'nein'
+  const feeFreshText = feePriceFresh.value ? t('common.yes') : t('common.no')
   const priceValue = `Pool: ${poolText} | TWAP: ${twapText} | Fee fresh: ${feeFreshText}`
-  const priceInfo = [
-    'Pool Price: aktueller Spotpreis aus den Pair-Reserven (USDC/MeBTC). Reagiert sofort auf Trades.',
-    'TWAP: zeitgewichteter Durchschnittspreis aus dem Oracle-Fenster. Stabiler, weniger sprunghaft.',
-    'TWAP-Update: passiert bei Claim/Upgrade (max. alle 2h).',
-    'Fee-Berechnung: Wenn Fee fresh = ja, wird TWAP fuer Gebühren genutzt; sonst Fallback auf Pool Price.'
+  const contractsInfo = [
+    `MeBTC: ${ADDRESSES.mebtc}`,
+    `MinerNFT: ${ADDRESSES.minerNft}`,
+    `Manager: ${ADDRESSES.miningManager}`,
+    `Pair (USDC/MeBTC): ${ADDRESSES.pair}`,
   ].join('\n')
   return [
-    { label: 'MeBTC', value: ADDRESSES.mebtc },
-    { label: 'MinerNFT', value: ADDRESSES.minerNft },
-    { label: 'Manager', value: ADDRESSES.miningManager },
-    { label: 'Pair (USDC/MeBTC)', value: ADDRESSES.pair },
-    { label: 'MeBTC price', value: priceValue, info: priceInfo }
+    { label: t('meta.contracts'), value: '', info: contractsInfo },
+    { label: t('meta.price'), value: priceValue, info: t('meta.price_info') }
   ]
 })
 </script>
 
 <template>
   <div class="app-root">
+    <div v-if="updateReady" class="update-banner">
+      <span>Update heruntergeladen – Neustart zum Installieren</span>
+      <button class="update-banner-btn" @click="window.electronAPI.installUpdate()">Jetzt neu starten</button>
+    </div>
     <main class="app-main">
       <Header
         title="MeBTC Dashboard"
@@ -700,7 +712,7 @@ const headerMeta = computed(() => {
             <ThemeToggle />
             <div class="control-stack control-stack-grid">
               <div class="control-cell">
-                <div class="ui-subtitle">Status</div>
+                <div class="ui-subtitle">{{ t('ctrl.status') }}</div>
                 <MiningStatsDropdown
                   :totalMined="totalMined"
                   :totalStaked="totalStaked"
@@ -719,7 +731,7 @@ const headerMeta = computed(() => {
                 />
               </div>
               <div class="control-cell">
-                <div class="ui-subtitle">Approvals</div>
+                <div class="ui-subtitle">{{ t('ctrl.approvals') }}</div>
                 <AllowancesDropdown
                   :disabled="!isConnected || !onChain"
                   :loading="allowancesLoading"
@@ -740,7 +752,7 @@ const headerMeta = computed(() => {
                 />
               </div>
               <div class="control-cell">
-                <div class="ui-subtitle">Tools</div>
+                <div class="ui-subtitle">{{ t('ctrl.tools') }}</div>
                 <MinerScannerCard
                   :disabled="!isConnected || !onChain"
                   :busy="scanBusy"
@@ -751,8 +763,8 @@ const headerMeta = computed(() => {
                   compact
                 />
               </div>
-              <div class="control-cell control-cell-critical">
-                <div class="ui-subtitle">Protocol</div>
+              <div class="control-cell">
+                <div class="ui-subtitle">{{ t('ctrl.protocol') }}</div>
                 <OracleActionsDropdown
                   :disabled="!isConnected || !onChain"
                   :busy="oracleBusy"
@@ -767,11 +779,11 @@ const headerMeta = computed(() => {
       </Header>
 
       <div v-if="!isConnected" class="notice">
-        wallet nicht verbunden (oben rechts verbinden)
+        {{ t('notice.not_connected') }}
       </div>
 
       <div v-else-if="!onChain" class="notice">
-        falsches netzwerk. bitte avalanche fuji auswählen
+        {{ t('notice.wrong_network') }}
       </div>
 
       <div class="section-grid">
@@ -899,3 +911,35 @@ const headerMeta = computed(() => {
     </main>
   </div>
 </template>
+
+<style scoped>
+.update-banner {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 20px;
+  background: var(--ui-accent, #f59e0b);
+  color: #000;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.update-banner-btn {
+  padding: 4px 14px;
+  border-radius: 6px;
+  border: none;
+  background: #000;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.update-banner-btn:hover {
+  opacity: 0.85;
+}
+</style>

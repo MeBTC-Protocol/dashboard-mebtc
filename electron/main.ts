@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, dialog } from 'electron'
+import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -18,7 +18,7 @@ app.on('second-instance', () => {
   }
 })
 
-function createWindow(): void {
+function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
     width: 1280,
     height: 900,
@@ -73,38 +73,32 @@ function createWindow(): void {
       callback({ requestHeaders: details.requestHeaders })
     }
   )
+
+  return win
 }
 
-function setupAutoUpdater(): void {
+function setupAutoUpdater(win: BrowserWindow): void {
   if (isDev) return
 
   autoUpdater.autoDownload = true
   autoUpdater.autoInstallOnAppQuit = true
 
   autoUpdater.on('update-downloaded', () => {
-    dialog
-      .showMessageBox({
-        type: 'info',
-        title: 'Update verfügbar',
-        message:
-          'Eine neue Version wurde heruntergeladen. Die App wird nach dem Neustart aktualisiert.',
-        buttons: ['Jetzt neu starten', 'Später']
-      })
-      .then(({ response }) => {
-        if (response === 0) autoUpdater.quitAndInstall()
-      })
+    win.webContents.send('update-downloaded')
   })
 
   autoUpdater.on('error', (err) => {
     console.error('[updater] Fehler beim Update-Check:', err.message)
   })
 
+  ipcMain.handle('update-install', () => autoUpdater.quitAndInstall())
+
   autoUpdater.checkForUpdatesAndNotify()
 }
 
 app.whenReady().then(() => {
-  createWindow()
-  setupAutoUpdater()
+  const win = createWindow()
+  setupAutoUpdater(win)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

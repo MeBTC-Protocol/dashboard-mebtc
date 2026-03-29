@@ -2,8 +2,10 @@
 import { computed } from 'vue'
 import { useAppKit } from '@reown/appkit/vue'
 import Button from '../common/Button.vue'
+import LocaleToggle from '../common/LocaleToggle.vue'
 import { shortAddr } from '../../utils/format'
 import { useWallet } from '../../composables/useWallet'
+import { useLocale } from '../../composables/useLocale'
 
 type HeaderMeta = { label: string; value: string; info?: string }
 
@@ -11,9 +13,10 @@ defineProps<{ title: string; meta?: HeaderMeta[]; iconUrl?: string }>()
 
 const { open } = useAppKit()
 const { isConnected, address, chainId, onChain } = useWallet()
+const { t } = useLocale()
 const appVersion = (import.meta.env.VITE_APP_VERSION as string | undefined) ?? 'dev'
 const buttonLabel = computed(() =>
-  isConnected.value && address.value ? shortAddr(address.value) : 'Wallet verbinden'
+  isConnected.value && address.value ? shortAddr(address.value) : t('wallet.connect')
 )
 </script>
 
@@ -49,6 +52,7 @@ const buttonLabel = computed(() =>
     </div>
     <div class="header-right">
       <slot name="right" />
+      <LocaleToggle />
       <div class="header-wallet">
         <div class="wallet-button-wrap">
           <Button size="sm" variant="solid" @click="open()">
@@ -198,8 +202,8 @@ const buttonLabel = computed(() =>
 .meta-info-popover {
   position: absolute;
   top: calc(100% + 8px);
-  right: 0;
-  width: min(420px, 82vw);
+  left: 0;
+  width: min(540px, 92vw);
   background: var(--ui-panel);
   border: var(--ui-border-width) solid var(--ui-border);
   border-radius: var(--ui-radius-md);
@@ -223,6 +227,8 @@ const buttonLabel = computed(() =>
   color: var(--ui-text-muted);
   font-size: 11px;
   line-height: 1.35;
+  font-family: monospace;
+  word-break: break-all;
 }
 
 .meta-info-line + .meta-info-line {
