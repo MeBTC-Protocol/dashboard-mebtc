@@ -33,9 +33,7 @@ jobs:
         shell: bash
 
       - name: Windows Installer bauen
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run dist
+        run: npm run electron:build && npx electron-builder --publish never
 
       - name: Installer hochladen
         uses: actions/upload-artifact@v4
@@ -68,9 +66,7 @@ jobs:
           echo "VITE_TARGET_CHAIN_ID=43113" >> .env.electron
 
       - name: macOS DMG bauen
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run dist
+        run: npm run electron:build && npx electron-builder --publish never
 
       - name: DMG hochladen
         uses: actions/upload-artifact@v4
@@ -103,9 +99,7 @@ jobs:
           echo "VITE_TARGET_CHAIN_ID=43113" >> .env.electron
 
       - name: Linux AppImage bauen
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run dist
+        run: npm run electron:build && npx electron-builder --publish never
 
       - name: AppImage hochladen
         uses: actions/upload-artifact@v4
