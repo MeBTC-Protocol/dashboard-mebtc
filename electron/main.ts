@@ -76,11 +76,6 @@ function setupAutoUpdater(): void {
   autoUpdater.checkForUpdatesAndNotify()
 }
 
-// AppImage on Linux cannot set SUID permissions on chrome-sandbox
-if (process.platform === 'linux') {
-  app.commandLine.appendSwitch('no-sandbox')
-}
-
 app.whenReady().then(() => {
   createWindow()
   setupAutoUpdater()
