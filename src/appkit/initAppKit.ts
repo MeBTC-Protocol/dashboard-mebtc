@@ -31,8 +31,8 @@ export function initAppKit() {
 
   const projectId = ENV.REOWN_PROJECT_ID
 
-  const iconBase =
-    typeof window !== 'undefined' && window.location?.origin ? window.location.origin : ENV.APP_URL
+  const origin = typeof window !== 'undefined' ? window.location?.origin : null
+  const iconBase = origin && origin !== 'null' ? origin : ENV.APP_URL
   const iconUrl = new URL('/Vintage MeBTC cryptocurrency token.png', iconBase).toString()
 
   const metadata = {
